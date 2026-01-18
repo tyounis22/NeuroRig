@@ -14,7 +14,7 @@ public:
 
     void ApplyForce(Vector3 force);
 
-    void Update(float deltaTime);
+    virtual void Update(float deltaTime); //adding virtual here will allow the Vehicle class to change the way movement works.
 
     virtual ~RigidBody();
 

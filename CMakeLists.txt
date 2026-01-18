@@ -18,6 +18,8 @@ add_executable(NeuroRig
         Entity.cpp
         RigidBody.cpp
         RigidBody.h
+        Vehicle.cpp
+        Vehicle.h
 )
 
 # Tell CMake to link Raylib to your executable

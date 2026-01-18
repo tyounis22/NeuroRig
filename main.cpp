@@ -4,8 +4,8 @@
 
 
 int main() {
-    const int screenWidth = 800;
-    const int screenHeight = 600;
+    const int screenWidth = 1700;
+    const int screenHeight = 1000;
 
     InitWindow(screenWidth, screenHeight, "First Truck Test");
     SetTargetFPS(60);

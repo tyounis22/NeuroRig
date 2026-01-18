@@ -16,9 +16,16 @@ void RigidBody::ApplyForce(Vector3 forceIn) {
 }
 
 void RigidBody::Update(float deltaTime) {
+    //Now add drag logic (air resistance) which acts opposite to velocity
+    // -2.0f is the drag coeffecient, how thick that air is.
+
+    Vector3 dragForce = Vector3Scale(this->velocity, -2.0f);
+    //now add the drag to the other forces
+    this->force = Vector3Add(this->force, dragForce);
     Vector3 acceleration = Vector3Scale(this->force, 1.0f / this->mass);
     this->velocity = Vector3Add(this->velocity, Vector3Scale(acceleration, deltaTime));
-
     this->position = Vector3Add(this->position, Vector3Scale(this->velocity, deltaTime));
-    force = {0.0f,0.0f,0.0f};
+    this->force = {0.0f,0.0f,0.0f};
+
+
 }
