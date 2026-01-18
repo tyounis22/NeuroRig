@@ -31,7 +31,7 @@ void Vehicle::Gas(float amount) {
 void Vehicle::Steering(float amount) {
 
     //define rotation sensitivity
-    Quaternion turnRotation = QuaternionFromAxisAngle({0.0f, 1.0f, 0.0f}, amount * -0.05f);
+    Quaternion turnRotation = QuaternionFromAxisAngle({0.0f, 1.0f, 0.0f}, amount * -0.01f);
 
     //lock in changes to accumulate rotation. Do this by multiplying current rotation by the new turn
     this->orientation = QuaternionMultiply(this->orientation, turnRotation);

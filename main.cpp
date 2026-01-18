@@ -73,11 +73,17 @@ int main() {
         car->position = {x, 1.0f, z};
         traffic.push_back(std::move(car));
     };
+        auto SpawnCarReverse = [&](float x, float z) {
+            auto car = std::make_unique<Vehicle>();
+            car->position = {x, 1.0f, z};
+            traffic.push_back(std::move(car));
+        };
+
 
     // spawn 3 cars in different lanes
     SpawnCar(-5.0f, 50.0f); // Left lane, ahead
     SpawnCar(5.0f, 100.0f); // Right lane, further ahead
-    SpawnCar(-5.0f, -40.0f); // Left lane, behind
+    SpawnCarReverse(-5.0f, -40.0f); // Left lane, behind
 
     //setuyp the camera
     Camera3D camera = { 0 };
