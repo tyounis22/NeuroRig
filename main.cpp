@@ -13,7 +13,7 @@ int main() {
     SetTargetFPS(60);
 
     Camera3D camera = { 0 };
-    camera.position = (Vector3){0.0f, 10.0f, 10.0f};
+    camera.position = (Vector3){0.0f, 50.0f, 50.0f};
     camera.target = (Vector3){0.0f, 0.0f, 0.0f};
     camera.up = (Vector3){0.0f,1.0f,0.0f};
     camera.fovy = 45.0f; //field of view,
@@ -25,19 +25,10 @@ int main() {
     while (!WindowShouldClose()) {
 
         // --- INPUT SECTION ---
-        // We now call the high-level Vehicle functions
-        if (IsKeyDown(KEY_UP)) {
-            towMater->Gas(-1.0f);
-        }
-        if (IsKeyDown(KEY_DOWN)) {
-            towMater->Gas(1.0f); // Reverse
-        }
-        if (IsKeyDown(KEY_LEFT)) {
-            towMater->Steering(-1.0f); // Turn Left
-        }
-        if (IsKeyDown(KEY_RIGHT)) {
-            towMater->Steering(1.0f); // Turn Right
-        }
+        if (IsKeyDown(KEY_UP))    towMater->Gas(1.0f);
+        if (IsKeyDown(KEY_DOWN))  towMater->Gas(-1.0f);
+        if (IsKeyDown(KEY_LEFT))  towMater->Steering(-1.0f);
+        if (IsKeyDown(KEY_RIGHT)) towMater->Steering(1.0f);
 
         // --- PHYSICS SECTION ---
         towMater->Update(GetFrameTime());
@@ -47,51 +38,59 @@ int main() {
             ClearBackground(RAYWHITE);
 
             BeginMode3D(camera);
-                DrawGrid(20, 1.0f);
+                DrawGrid(50, 1.0f); // Made grid bigger so you have room to drive
 
-                // --- MATRIX MAGIC START ---
-                // We need to tell Raylib: "Apply this rotation to everything I draw next"
+                // --- MATRIX TRANSFORMATIONS ---
                 rlPushMatrix();
-
-                    // 1. Move the "pen" to the truck's position
+                    // 1. Move to Truck Position
                     rlTranslatef(towMater->position.x, towMater->position.y, towMater->position.z);
 
-                    // 2. Rotate the "pen" to match the truck's orientation
-                    // We need to convert Quaternion to Axis-Angle for rlRotatef
+                    // 2. Rotate to match Truck Orientation
                     Vector3 axis;
                     float angle;
                     QuaternionToAxisAngle(towMater->orientation, &axis, &angle);
-
-                    // Raylib uses Degrees, Quaternion gives Radians. Convert it!
                     rlRotatef(angle * RAD2DEG, axis.x, axis.y, axis.z);
 
-                    // 3. Draw the Truck
-                    // (We draw at 0,0,0 relative to the 'pen', because we already moved the pen to the right spot)
+                    // --- TRUCK DRAWING (Local Coordinates) ---
+                    // Since we moved the world to the truck, (0,0,0) is the center of the truck.
 
-                    // Body (Red)
-                    DrawCube((Vector3){0, 0, 0}, 2.0f, 2.0f, 4.0f, RED);
+                    // A. The Chassis (Gray Frame)
+                    DrawCube((Vector3){0, 0.5f, 0}, 1.8f, 0.5f, 6.0f, DARKGRAY);
 
-                    // Nose/Cabin (Blue) - This helps you see which way is FORWARD
-                    DrawCube((Vector3){0, 0.5f, 1.5f}, 1.5f, 1.5f, 1.0f, BLUE);
+                    // B. The Cabin (Red Head) - Sitting at +Z (Forward)
+                    DrawCube((Vector3){0, 1.75f, 2.0f}, 2.0f, 2.5f, 1.5f, RED);
+                    // Windshield
+                    DrawCube((Vector3){0, 2.2f, 2.76f}, 1.8f, 1.0f, 0.1f, SKYBLUE);
 
-                    // Wires for style
-                    DrawCubeWires((Vector3){0, 0, 0}, 2.0f, 2.0f, 4.0f, MAROON);
+                    // C. The Trailer (White Box) - Sitting at -Z (Back)
+                    DrawCube((Vector3){0, 2.0f, -1.5f}, 2.2f, 3.5f, 4.5f, DARKPURPLE);
+                    // Rear Door
+                    DrawCube((Vector3){0, 2.0f, -3.76f}, 2.0f, 3.0f, 0.1f, GRAY);
+
+                    // D. The Wheels (6 Black Blocks)
+                    Vector3 wheelPositions[] = {
+                        {-1.1f, 0.5f, 2.0f}, { 1.1f, 0.5f, 2.0f},   // Front Axle
+                        {-1.1f, 0.5f, -1.0f}, { 1.1f, 0.5f, -1.0f}, // Rear Axle 1
+                        {-1.1f, 0.5f, -2.5f}, { 1.1f, 0.5f, -2.5f}  // Rear Axle 2
+                    };
+
+                    for(int i = 0; i < 6; i++) {
+                        DrawCube(wheelPositions[i], 0.5f, 1.0f, 1.0f, BLACK);
+                        DrawCubeWires(wheelPositions[i], 0.5f, 1.0f, 1.0f, DARKGRAY);
+                    }
 
                 rlPopMatrix();
-                // --- MATRIX MAGIC END ---
-                // Reset the "pen" so we don't accidentally draw the grid rotated next frame
+                // --- END MATRIX ---
 
             EndMode3D();
 
+            // UI
             DrawFPS(10, 10);
-            DrawText("Use Arrows to Drive!", 10, 40, 20, DARKGRAY);
-
-            // Debug: Print Speed so you can see physics working
-            DrawText(TextFormat("Speed: %.2f", Vector3Length(towMater->velocity)), 10, 70, 20, DARKGRAY);
+            DrawText("NeuroRig: v0.3", 10, 40, 20, DARKGRAY);
+            DrawText(TextFormat("Speed: %.1f MPH", Vector3Length(towMater->velocity) * 2.23f), 10, 70, 20, LIME);
 
         EndDrawing();
     }
-
 
 CloseWindow();
 return 0;

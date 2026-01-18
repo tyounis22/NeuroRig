@@ -37,9 +37,33 @@ void Vehicle::Steering(float amount) {
     this->orientation = QuaternionMultiply(this->orientation, turnRotation);
     }
 
+// In Vehicle.cpp
+
 void Vehicle::Update(float deltaTime) {
 
-    //must call parent class's update function, to ensure the physics math still happens
+    // --- STEP 1: TIRE GRIP LOGIC ---
+
+    // Calculate the truck's "Right" vector (The direction sticking out the passenger window)
+    // In local space, Right is {1, 0, 0}
+    Vector3 rightLocal = { 1.0f, 0.0f, 0.0f };
+    Vector3 rightWorld = Vector3RotateByQuaternion(rightLocal, this->orientation);
+
+    // Calculate how fast we are sliding sideways (Dot Product)
+    // Dot Product asks: "How much of the Velocity is going in the Right direction?"
+    float sidewaysSpeed = Vector3DotProduct(this->velocity, rightWorld);
+
+    // Create an impulse to cancel that sliding
+    // 0.95f is the "Grip Factor".
+    // 1.0 = On Rails (No drift at all)
+    // 0.0 = Pure Ice (Full drift)
+    // 0.95 = Tarmac (Tiny bit of slip)
+    Vector3 gripImpulse = Vector3Scale(rightWorld, -sidewaysSpeed * 0.95f);
+
+    // Apply the grip directly to velocity (Tires react instantly)
+    this->velocity = Vector3Add(this->velocity, gripImpulse);
+
+    // --- STEP 2: STANDARD PHYSICS ---
+    // Now run the normal physics (Drag, Acceleration, Movement)
     RigidBody::Update(deltaTime);
 }
 
